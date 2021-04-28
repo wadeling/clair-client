@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"github.com/wadeling/clair-client/pkg/registry"
+	"github.com/wadeling/clair-client/pkg/registry-wrap"
 )
 
 type ClairClient struct {
@@ -16,13 +16,13 @@ type ClairClient struct {
 	imageName string
 	tagName string
 	fullRepoName string
-	registryClient *registry.RegistryClient
+	registryClient *registryWrap.RegistryClient
 }
 
 func (cc *ClairClient) NewRegistryClient() error {
 	f := fmt.Sprintf("%s/%s",cc.repository,cc.imageName)
 	cc.fullRepoName = f
-	client, err := registry.NewRegistryClient(cc.username,cc.password,cc.fullRepoName,cc.registryUrl,true)
+	client, err := registryWrap.NewRegistryClient(cc.username,cc.password,cc.fullRepoName,cc.registryUrl,true)
 	if err != nil {
 		return err
 	}
