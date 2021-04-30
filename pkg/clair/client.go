@@ -18,11 +18,12 @@ const (
 )
 
 type Client struct {
-	clairAddr string
-	clairPort int
+	Ctx context.Context
+	ClairAddr string
+	ClairPort int
 }
 
-func (c *Client) scheduleLayerScanInClair(ctx context.Context, path, layerName, parentLayerName string) error {
+func (c *Client) ScheduleLayerScanInClair(ctx context.Context, path, layerName, parentLayerName string) error {
 	payload := NewerLayerEnvelope{
 		Layer: NewerLayer{
 			Name:       layerName,
@@ -36,7 +37,7 @@ func (c *Client) scheduleLayerScanInClair(ctx context.Context, path, layerName, 
 		return fmt.Errorf("json marshal err %v",err)
 	}
 
-	reqPath := fmt.Sprintf(postLayerURI, c.clairAddr, c.clairPort)
+	reqPath := fmt.Sprintf(postLayerURI, c.ClairAddr, c.ClairPort)
 	request, err := http.NewRequest("POST", reqPath, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return fmt.Errorf("new request err %v",err)
@@ -81,10 +82,10 @@ func (c *Client) scheduleLayerScanInClair(ctx context.Context, path, layerName, 
 	return nil
 }
 
-func (c *Client) getTransformedLayerScanResultFromClair(ctx context.Context, digest string) (string, []model.VulnerabilityInfo, error) {
+func (c *Client) GetTransformedLayerScanResultFromClair(ctx context.Context, digest string) (string, []model.VulnerabilityInfo, error) {
 	var vulnerabilities = make([]model.VulnerabilityInfo, 0)
 	var vulnerabilitiesMap = make(map[string]model.VulnerabilityInfo)
-	rawVulnerabilities, err := c.fetchLayerVulnerabilitiesFromClair(ctx, digest)
+	rawVulnerabilities, err := c.FetchLayerVulnerabilitiesFromClair(ctx, digest)
 	if err != nil {
 		return "", []model.VulnerabilityInfo{}, fmt.Errorf("Could not fetch vulnerabilities of %s: %w", digest, err)
 	}
@@ -141,9 +142,9 @@ func (c *Client) getTransformedLayerScanResultFromClair(ctx context.Context, dig
 	return rawVulnerabilities.NamespaceName, vulnerabilities, nil
 }
 
-func (c *Client) fetchLayerVulnerabilitiesFromClair(ctx context.Context, layerID string) (NewerLayer, error) {
+func (c *Client) FetchLayerVulnerabilitiesFromClair(ctx context.Context, layerID string) (NewerLayer, error) {
 
-	reqPath := fmt.Sprintf(getLayerFeaturesURI, c.clairAddr, c.clairPort, layerID)
+	reqPath := fmt.Sprintf(getLayerFeaturesURI, c.ClairAddr, c.ClairPort, layerID)
 	request, err := http.NewRequest("GET", reqPath, nil)
 	if err != nil {
 		return NewerLayer{}, fmt.Errorf("Failed to prepare request to Clair: %w", err)
